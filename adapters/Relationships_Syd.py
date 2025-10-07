@@ -2,9 +2,9 @@ import os
 import pandas as pd
 
 def process_relationship_files(selected_file, **kwargs):
-    CM_ID_Lookup_directory = r"C:\Users\steve\OneDrive\Documents\Social Pinpoint\Project\SWC\CM ID Lookup"
-    relationship_dir = r"C:\Users\steve\OneDrive\Documents\Social Pinpoint\Project\SWC\Legacy Relationships"
-    output_dir = r"C:\Users\steve\OneDrive\Documents\Social Pinpoint\Project\SWC\output\cm_relationships_csv"
+    CM_ID_Lookup_directory = r"C:\Users\steve\OneDrive\Documents\SPP\Project\SWC\CM ID Lookup"
+    relationship_dir = r"C:\Users\steve\OneDrive\Documents\SPP\Project\SWC\Legacy Relationships"
+    output_dir = r"C:\Users\steve\OneDrive\Documents\SPP\Project\SWC\output\cm_relationships_csv"
     os.makedirs(output_dir, exist_ok=True)
 
     # Summary counters
