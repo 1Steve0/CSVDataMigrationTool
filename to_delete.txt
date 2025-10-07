@@ -1,0 +1,20 @@
+.gitignore
+README.md
+adapter_output_logs.json
+adapters/Classifications_Postcode.php
+adapters/sample_adapter.php
+config.py
+debug_output.txt
+entities/entity_map.json
+helpers/__init__.py
+helpers/adapter_loader.py
+helpers/column_matcher.py
+helpers/logger.py
+migrations/migration_engine.py
+migrations/migration_log.json
+out.json
+raw files/test.csv
+reports/Bash logs.docx
+reports/report_generator.py
+run_history/history.json
+ui_debug_log.txt

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>CSV Data Migration Tool</title>
+    <link rel="stylesheet" href="/static/style.css?v=1.0" />
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
+  </head>
+  <body>
+    <h1>🔄 CSV Data Migration Tool</h1>
+
+    <form id="migrationForm" enctype="multipart/form-data">
+      <!-- Input File -->
+      <div style="margin: 1em 0">
+        <label
+          for="input_file"
+          style="display: block; font-weight: bold; margin-bottom: 0.5em"
+        >
+          📁 Select Input File:
+        </label>
+        <input
+          type="file"
+          id="input_file"
+          name="input_file"
+          required
+          style="padding: 8px; font-size: 16px; width: 600px"
+        />
+      </div>
+
+      <!-- Adapter Selection -->
+      <label for="adapter_name">Adapter Name:</label>
+      <select id="adapter_name" name="adapter_name" required>
+        {% for name in adapter_names %}
+        <option value="{{ name }}" {% if loop.first %}selected{% endif %}>
+          {{ name }}
+        </option>
+        {% endfor %}
+      </select>
+
+      <!-- Debug Toggle -->
+      <label>
+        <input type="checkbox" id="show-debug" checked /> Show debug logs
+      </label>
+      <div
+        id="debug-output"
+        style="
+          display: none;
+          white-space: pre-wrap;
+          font-family: monospace;
+          margin-top: 1em;
+        "
+      ></div>
+
+      <!-- Run Button -->
+      <button type="submit" class="run-button">Run Migration</button>
+    </form>
+
+    <div id="results" style="margin-top: 30px"></div>
+
+    <script>
+      document
+        .getElementById("show-debug")
+        .addEventListener("change", function () {
+          document.getElementById("debug-output").style.display = this.checked
+            ? "block"
+            : "none";
+        });
+
+      document
+        .getElementById("migrationForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const formData = new FormData(e.target);
+          const resultsDiv = document.getElementById("results");
+          const debugDiv = document.getElementById("debug-output");
+          resultsDiv.innerHTML = "⏳ Running migration...";
+          debugDiv.textContent = "";
+
+          try {
+            const response = await fetch("/run_migration", {
+              method: "POST",
+              body: formData,
+            });
+
+            const result = await response.json();
+
+            if (result.status === "success") {
+              const summary = result.summary;
+              const reports = result.report_paths;
+              resultsDiv.innerHTML = `
+              <h3>✅ Migration Complete</h3>
+              <p><strong>Total Rows:</strong> ${summary.total}</p>
+              <p><strong>Successfully Written:</strong> ${summary.success}</p>
+              <p><strong>Skipped:</strong> ${summary.skipped}</p>
+              <p><strong>Duration:</strong> ${summary.duration} seconds</p>
+              ${
+                summary.errors.length > 0
+                  ? `<details><summary>Skipped Reasons</summary><ul>${summary.errors
+                      .map((e) => `<li>${e}</li>`)
+                      .join("")}</ul></details>`
+                  : ""
+              }
+              <p><a href="${
+                reports.xlsx
+              }" download>📥 Download XLSX Report</a></p>
+              <p><a href="${
+                reports.pdf
+              }" download>📥 Download PDF Report</a></p>
+              <p><a href="${reports.csv}" download>📥 Download CSV Log</a></p>
+            `;
+
+              if (
+                document.getElementById("show-debug").checked &&
+                result.debug
+              ) {
+                debugDiv.textContent = result.debug.join("\n");
+                debugDiv.scrollIntoView({ behavior: "smooth" });
+              }
+            } else {
+              resultsDiv.innerHTML = `<h3>❌ Error</h3><p>${result.message}</p>`;
+              if (result.debug) {
+                debugDiv.textContent = result.debug.join("\n");
+                debugDiv.scrollIntoView({ behavior: "smooth" });
+              }
+            }
+          } catch (err) {
+            resultsDiv.innerHTML = `<h3>❌ Unexpected Error</h3><p>${err.message}</p>`;
+          }
+        });
+    </script>
+  </body>
+</html>
